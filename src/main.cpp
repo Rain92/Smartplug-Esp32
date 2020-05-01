@@ -19,6 +19,7 @@ void setup()
     InitSettings();
 
     InitRTC();
+    InitCurrentMeter();
 
     if (!ConnectWifi())
     {
@@ -33,7 +34,6 @@ void setup()
     InitOTA();
 }
 
-int c = 0;
 void loop()
 {
     ArduinoOTA.handle();
@@ -44,9 +44,11 @@ void loop()
     HandleUdpEvents();
 
     UpdateOutputState();
-    // SampleCurrent();
 
-    delay(100);
+    PrintPowerUsagePeriodically();
+    samplePowerUsagePeriodically();
+
+    delayMicroseconds(50);
 }
 
 void loopOffline()
@@ -55,6 +57,9 @@ void loopOffline()
         ESP.restart();
 
     UpdateOutputState();
-    // SampleCurrent();
-    delay(100);
+
+    PrintPowerUsagePeriodically();
+    samplePowerUsagePeriodically();
+
+    delayMicroseconds(50);
 }

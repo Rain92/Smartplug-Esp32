@@ -49,7 +49,17 @@ void InitTcpServer()
     server.on("/power", HTTP_GET,
               [](AsyncWebServerRequest *request) { request->send(200, "text/plain", String(GetPowerUsage())); });
 
-    server.on("/get", HTTP_GET, [](AsyncWebServerRequest *request) {
+    server.on("/powerhistory", HTTP_GET, [](AsyncWebServerRequest *request) {
+        Serial.println("Get command");
+        auto size = sizeof(powerUsageHistory);
+        auto buffer = (uint8_t *)malloc(size);
+        memcpy(buffer, (void *)&powerUsageHistory, size);
+        AsyncWebServerResponse *response = request->beginResponse_P(200, "application/x-binary", buffer, size);
+        request->send(response);
+        free(buffer);
+    });
+
+    server.on("/getsettings", HTTP_GET, [](AsyncWebServerRequest *request) {
         Serial.println("Get command");
         auto size = sizeof(ControlSettings);
         auto buffer = (uint8_t *)malloc(size);
@@ -62,7 +72,7 @@ void InitTcpServer()
     });
 
     server.on(
-        "/set", HTTP_PUT,
+        "/setsettings", HTTP_POST,
         [](AsyncWebServerRequest *request) {
             Serial.println("Set command");
             AsyncWebServerResponse *response = request->beginResponse(200, "text/plain", AKK);
@@ -82,6 +92,30 @@ void InitTcpServer()
                 Serial.println("Invalid Data length!");
             }
         });
+
+    server.on("/setturnoffcountdown", HTTP_POST, [](AsyncWebServerRequest *request) {
+        Serial.println("Turn off countdown command");
+        if (request->hasParam("time", true))
+        {
+            int seconds = request->getParam("time", true)->value().toInt();
+            if (seconds > 0)
+            {
+                Serial.printf("Turning off in %d seconds. \n", seconds);
+                turnOffCountdownEnd = millis() + seconds * 1000;
+                turnOffCountdownActive = true;
+            }
+            else
+            {
+                turnOffCountdownActive = false;
+            }
+        }
+        request->send(200, "text/plain", AKK);
+    });
+
+    server.on("/getturnoffcountdown", HTTP_GET, [](AsyncWebServerRequest *request) {
+        request->send(200, "text/plain",
+                      turnOffCountdownActive ? String((turnOffCountdownEnd - millis()) / 1000) : String("0"));
+    });
 
     server.on("/reset", HTTP_GET, [](AsyncWebServerRequest *request) {
         request->send(200, "text/plain", AKK);

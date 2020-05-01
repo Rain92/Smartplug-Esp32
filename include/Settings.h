@@ -4,13 +4,13 @@
 
 #include "RtcDS3231.h"
 
-#define MAGICKEY 836457362ull
+#define MAGICKEY 836447362ull
 
 #define MAGICKEY_FLASHKEY "magickey"
 #define SETTINGS_FLASHKEY "settings"
 
 #define WIFISSID_DEFAULT "WLAN-66FB40_EXT"
-#define WIFIPASSWORD_DEFAULT "dontpublishthis"
+#define WIFIPASSWORD_DEFAULT "password"
 #define NETID_DEFAULT "esp32"
 
 #define MODE_DEFAULT Off

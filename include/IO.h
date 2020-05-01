@@ -47,8 +47,27 @@ void SetOutputStateTimeBased()
     SetOutputState(on);
 }
 
+bool turnOffCountdownActive = false;
+unsigned long turnOffCountdownEnd;
+void CheckTurnOffCountdown()
+{
+    if (settings.controlSettings.mode == On)
+    {
+        if (turnOffCountdownActive && millis() > turnOffCountdownEnd)
+        {
+            settings.controlSettings.mode = Off;
+            turnOffCountdownActive = false;
+        }
+    }
+    else
+    {
+        turnOffCountdownActive = false;
+    }
+}
+
 void UpdateOutputState()
 {
+    CheckTurnOffCountdown();
     switch (settings.controlSettings.mode)
     {
         case Off:
@@ -68,6 +87,9 @@ void UpdateOutputState()
 void SetOutputMode(Mode mode)
 {
     settings.controlSettings.mode = mode;
+    if (mode != On)
+        turnOffCountdownActive = false;
+
     SaveSettings();
 
     UpdateOutputState();
